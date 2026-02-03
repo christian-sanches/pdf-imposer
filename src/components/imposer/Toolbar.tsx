@@ -1,9 +1,9 @@
 'use client';
 
-import { FilePlus, BookOpen, Download, LayoutTemplate, Settings2 } from 'lucide-react';
-import { clsx } from 'clsx';
-import { useMemo, useState } from 'react';
 import { Slider } from '@src/components/ui/slider';
+import { clsx } from 'clsx';
+import { BookOpen, Download, FilePlus } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 interface ToolbarProps {
   onAddBlank: () => void;
@@ -98,7 +98,7 @@ export function Toolbar({
             <div className="h-8 w-px bg-gray-300 dark:bg-gray-600"></div>
 
             <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Tamanho do Grupo</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Quantidade de Páginas por Bloco</span>
                 <input
                     type="number"
                     min="0"
@@ -126,8 +126,9 @@ export function Toolbar({
                           ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md" 
                           : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
                     )}
+                    title="1 Página por Folha A4"
                 >
-                    <div className={clsx("w-3 h-4 border-2", outputLayout === 'A4' ? "border-white bg-white/30" : "border-gray-500 dark:border-gray-400 bg-white dark:bg-gray-700")} title="1 Página por Folha"></div>
+                    <div className={clsx("w-3 h-4 border-2", outputLayout === 'A4' ? "border-white bg-white/30" : "border-gray-500 dark:border-gray-400 bg-white dark:bg-gray-700")}></div>
                     A4
                 </button>
                 <div className="w-px bg-gray-300 dark:bg-gray-600"></div>
@@ -139,8 +140,9 @@ export function Toolbar({
                           ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md" 
                           : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
                     )}
+                    title="2 Páginas A5 por Folha A4 (Livreto)"
                 >
-                    <div className={clsx("w-4 h-3 border-2 flex", outputLayout === 'A5' ? "border-white bg-white/30" : "border-gray-500 dark:border-gray-400 bg-white dark:bg-gray-700")} title="2 Páginas por Folha">
+                    <div className={clsx("w-4 h-3 border-2 flex", outputLayout === 'A5' ? "border-white bg-white/30" : "border-gray-500 dark:border-gray-400 bg-white dark:bg-gray-700")}>
                         <div className={clsx("w-1/2 h-full border-r-2", outputLayout === 'A5' ? "border-white" : "border-gray-500 dark:border-gray-400")}></div>
                     </div>
                     A5
@@ -174,6 +176,7 @@ export function Toolbar({
             "flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg",
             (isDownloading || pageCount === 0) && "opacity-50 cursor-not-allowed"
           )}
+          title="Baixar PDF com a imposição configurada"
         >
           <Download className="w-5 h-5" />
           Baixar
