@@ -1,9 +1,9 @@
 'use client';
 
-import { FilePlus, BookOpen, Download, LayoutTemplate, Settings2 } from 'lucide-react';
-import { clsx } from 'clsx';
-import { useMemo, useState } from 'react';
 import { Slider } from '@src/components/ui/slider';
+import { clsx } from 'clsx';
+import { BookOpen, Download, FilePlus } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
 interface ToolbarProps {
   onAddBlank: () => void;
@@ -98,7 +98,7 @@ export function Toolbar({
             <div className="h-8 w-px bg-gray-300 dark:bg-gray-600"></div>
 
             <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Tamanho do Grupo</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Quantidade de Páginas por Bloco</span>
                 <input
                     type="number"
                     min="0"

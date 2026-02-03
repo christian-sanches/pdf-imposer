@@ -13,6 +13,7 @@ if (typeof Promise.withResolvers === 'undefined') {
 }
 
 import { PDFDocument, PageSizes } from 'pdf-lib';
+import type { PDFPageProxy } from 'pdfjs-dist';
 import * as pdfjsLib from 'pdfjs-dist';
 import { type Page, type SourceFile } from './types';
 
@@ -66,7 +67,7 @@ export async function loadAndExtractPages(file: File): Promise<{ pages: Page[]; 
   return { pages, sourceFile };
 }
 
-async function renderPageThumbnail(page: any): Promise<string> {
+async function renderPageThumbnail(page: PDFPageProxy): Promise<string> {
   const viewport = page.getViewport({ scale: 0.5 }); // Thumbnail scale
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
@@ -237,7 +238,7 @@ export async function saveNewPdf(
         const { width: sheetWidth, height: sheetHeight } = sheet.getSize();
         const halfWidth = sheetWidth / 2;
 
-        const drawItem = async (p: Page | undefined, offsetX: number) => {
+        const drawItem = async (p: Page | undefined, offsetX: number, isLeft: boolean) => {
             if (!p || p.type === 'blank') return;
             
             const sourceFile = sourceFiles.get(p.sourceFileId);
@@ -246,7 +247,11 @@ export async function saveNewPdf(
             const buffer = await sourceFile.arrayBuffer();
             
             // Fit into half page with bleed padding
-            const maxWidth = halfWidth - (bleed * 2);
+            // For left page: only apply bleed on left, top, bottom (not on center)
+            // For right page: only apply bleed on right, top, bottom (not on center)
+            const bleedLeft = isLeft ? bleed : 0;
+            const bleedRight = isLeft ? 0 : bleed;
+            const maxWidth = halfWidth - bleedLeft - bleedRight;
             const maxHeight = sheetHeight - (bleed * 2);
             
             if (maxWidth <= 0 || maxHeight <= 0) return;
@@ -260,15 +265,18 @@ export async function saveNewPdf(
                 }
                 const dims = imageEmbed.scale(1);
                 
-                const scale = Math.min(
-                    maxWidth / dims.width,
-                    maxHeight / dims.height
-                );
+                // Scale to fill width completely (pages touch at center), fit height if possible
+                const scaleWidth = maxWidth / dims.width;
+                const scaleHeight = maxHeight / dims.height;
+                const scale = Math.max(scaleWidth, scaleHeight);
 
-                // Center within the half-page area that respects bleed margins
                 const scaledWidth = dims.width * scale;
                 const scaledHeight = dims.height * scale;
-                const x = offsetX + bleed + (maxWidth - scaledWidth) / 2;
+                
+                // Align to center fold: left page aligns right, right page aligns left
+                const x = isLeft 
+                    ? offsetX + halfWidth - scaledWidth - bleedRight
+                    : offsetX + bleedLeft;
                 const y = bleed + (maxHeight - scaledHeight) / 2;
 
                 sheet.drawImage(imageEmbed, { x, y, width: scaledWidth, height: scaledHeight });
@@ -281,23 +289,26 @@ export async function saveNewPdf(
                 
                 const dims = embeddedPage.scale(1);
                 
-                const scale = Math.min(
-                    maxWidth / dims.width,
-                    maxHeight / dims.height
-                );
+                // Scale to fill width completely (pages touch at center), fit height if possible
+                const scaleWidth = maxWidth / dims.width;
+                const scaleHeight = maxHeight / dims.height;
+                const scale = Math.max(scaleWidth, scaleHeight);
 
-                // Center within the half-page area that respects bleed margins
                 const scaledWidth = dims.width * scale;
                 const scaledHeight = dims.height * scale;
-                const x = offsetX + bleed + (maxWidth - scaledWidth) / 2;
+                
+                // Align to center fold: left page aligns right, right page aligns left
+                const x = isLeft 
+                    ? offsetX + halfWidth - scaledWidth - bleedRight
+                    : offsetX + bleedLeft;
                 const y = bleed + (maxHeight - scaledHeight) / 2;
 
                 sheet.drawPage(embeddedPage, { x, y, width: scaledWidth, height: scaledHeight });
             }
         };
 
-        await drawItem(p1, 0); // Left
-        await drawItem(p2, halfWidth); // Right
+        await drawItem(p1, 0, true); // Left
+        await drawItem(p2, halfWidth, false); // Right
     }
   }
 
